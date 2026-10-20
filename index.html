@@ -660,10 +660,10 @@ function combatUpperPose(a,act){
  p.headYaw=-p.chest*.78;p.headPitch=-p.lean*.45-recoil*.1;
  return p;
 }
-function sharedGripTarget(right,left,target,direction){
+function sharedGripTarget(right,left,target,direction,spacing=5){
  // Both shoulders must be able to reach their point on the same rigid hilt.
  const project=(center,p)=>{const d=vsub(p,center),n=Math.hypot(...d);return n>28?vadd(center,vscale(d,28/n)):p};
- for(let i=0;i<8;i++){target=project(right,target);const support=vsub(target,vscale(direction,5));target=vsub(target,vsub(support,project(left,support)))}
+ for(let i=0;i<32;i++){target=project(right,target);const support=vsub(target,vscale(direction,spacing));target=vsub(target,vsub(support,project(left,support)))}
  return target;
 }
 
@@ -1380,26 +1380,27 @@ function actorMesh(data,fx,a){
  else shape(data,'sphere',headRoot,[0,49,1],[6,4,5.3],s.hair);
  if(id==='king'){shape(data,'cylinder',headRoot,[0,50,0],[6.6,3,6.6],s.trim);for(let i=0;i<5;i++){const t=i/5*Math.PI*2;shape(data,'cube',headRoot,[Math.cos(t)*6,54,Math.sin(t)*6],[1.7,7,1.7],s.trim)}shape(data,'sphere',headRoot,[0,38.5,-3],[3.5,4,2],s.hair)}
  if(id==='thorn')for(const sign of [-1,1]){bone(data,headRoot,[sign*4,50,0],[sign*10,63,0],1,s.trim);bone(data,headRoot,[sign*10,63,0],[sign*14,66,-3],.7,s.trim)}
- const grip=a.roll>0?0:upper.grip*(1-flask.blend),armWeight=1-upper.weight*.9;
+ const grip=(a.roll>0&&heroClass!=='heavy'?0:upper.grip)*(1-flask.blend),gripSpacing=heroClass==='heavy'?8:5,armWeight=1-upper.weight*.9;
  const rightShoulder=[14,30+gait.shoulder*armWeight+upper.shoulder,upper.reach],leftShoulder=[-14,30-gait.shoulder*armWeight+upper.shoulder*.6+flask.blend*2,-upper.reach*.25];
  let bladeDir=vnorm(blendPoint(blendPoint(upper.blade,[.1,.5,-.85],tuck),[.35,-.7,-.55],flask.blend));
  let target=[upper.hand[0]+gait.hipX*.35,upper.hand[1]+gait.armLift*armWeight,upper.hand[2]+gait.arm*armWeight*(1-grip*.7)];
  target=blendPoint(target,[7,21,-8],tuck);
  target=blendPoint(target,[15,6,4],flask.blend);
- if(grip>0)target=blendPoint(target,sharedGripTarget(rightShoulder,leftShoulder,target,bladeDir),grip);
+ if(grip>0)target=blendPoint(target,sharedGripTarget(rightShoulder,leftShoulder,target,bladeDir,gripSpacing),grip);
  const right=joint3(rightShoulder,target,14,15,[1,-.15,.35]),hand=right.end;
  let freeTarget=[upper.free[0]-gait.hipX*.3,upper.free[1]+gait.armLift*armWeight,upper.free[2]-gait.arm*armWeight];
  freeTarget=blendPoint(freeTarget,[-7,21,-8],tuck);
- if(grip>0)freeTarget=blendPoint(freeTarget,vsub(hand,vscale(bladeDir,5)),grip);
+ if(grip>0)freeTarget=blendPoint(freeTarget,vsub(hand,vscale(bladeDir,gripSpacing)),grip);
  freeTarget=blendPoint(freeTarget,flask.hand,flask.blend);
  const left=joint3(leftShoulder,freeTarget,14,15,[-1,0,0]);
  for(const [shoulder,rig]of [[rightShoulder,right],[leftShoulder,left]]){bone(data,torso,[Math.sign(shoulder[0])*3,29,-1],shoulder,2,s.steelDark);bone(data,torso,shoulder,rig.joint,2.8,s.steel);bone(data,torso,rig.joint,rig.end,2.2,s.steelDark);shape(data,'sphere',torso,shoulder,[5,4,5],s.steel);shape(data,'sphere',torso,rig.end,[2.3,2.5,2.3],s.leather)}
- const length=(hero?playerClass(a).weaponLength:id==='bell'?57:64)*(1-tuck*.6),tip=vadd(hand,vscale(bladeDir,length));
+ const length=(hero?playerClass(a).weaponLength:id==='bell'?57:64)*(1-tuck*.6),tip=vadd(hand,vscale(bladeDir,length)),bladeBase=heroClass==='heavy'?vadd(hand,vscale(bladeDir,4)):hand;
  const weaponAway=a.moveId==='hammerReturn'&&bossHazards.some(h=>h.owner===a&&h.visual==='hammer'&&h.age>=h.delay&&h.age<h.delay+h.duration);
- if(!weaponAway){bone(data,torso,vsub(hand,vscale(vnorm(bladeDir),7)),hand,1.6,s.leather);
+ if(!weaponAway){bone(data,torso,vsub(hand,vscale(bladeDir,heroClass==='heavy'?12:7)),bladeBase,1.6,s.leather);
+ if(heroClass==='heavy')shape(data,'sphere',torso,vsub(hand,vscale(bladeDir,13)),[2.2,2.2,2.2],s.trim);
  if(id==='bell'){bone(data,torso,hand,tip,1.6,s.leather);shape(data,'cube',torso,tip,[17,14,15],s.steel)}
  else if(id==='crypt'){bone(data,torso,hand,tip,1.3,s.leather);const charge=hero?(a.chargeBlend||0)*(1+(a.chargeTime||0)/1.2):0;shape(fx,'sphere',torso,tip,[4+charge*3,5+charge*3,4+charge*3],hero?'#83caff':'#c9b4e6',.8,1)}
- else{if(hero&&heroClass!=='swordsman')playerBlade3(data,torso,hand,tip,heroClass==='heavy'?3.8:2,s.steel);else bone(data,torso,hand,tip,1.6,s.steel);const n=vnorm(bladeDir),cross=vnorm(vcross(n,[0,0,1]));bone(data,torso,vadd(hand,vscale(cross,-5)),vadd(hand,vscale(cross,5)),.8,s.trim)}}
+ else{if(hero&&heroClass!=='swordsman')playerBlade3(data,torso,bladeBase,tip,heroClass==='heavy'?3.8:2,s.steel);else bone(data,torso,hand,tip,1.6,s.steel);const n=vnorm(bladeDir),cross=vnorm(vcross(n,Math.abs(n[2])>.95?[1,0,0]:[0,0,1]));bone(data,torso,vadd(bladeBase,vscale(cross,-5)),vadd(bladeBase,vscale(cross,5)),.8,s.trim)}}
  if(heroClass==='assassin'&&!(a.heal>0)){
   const direction=vnorm(blendPoint([-upper.blade[0],upper.blade[1],upper.blade[2]],[-.1,.3,-1],tuck)),end=vadd(left.end,vscale(direction,length));
   playerBlade3(data,torso,left.end,end,2,s.steel);bone(data,torso,vsub(left.end,vscale(direction,6)),left.end,1.3,s.leather);
@@ -1412,7 +1413,7 @@ function actorMesh(data,fx,a){
   shape(data,'cylinder',bottle,[0,6.6,0],[1.9,1,1.9],'#e3d2a0');
   shape(fx,'sphere',bottle,[0,-1,0],[2.7,3.4,2.7],'#ffbd59',.45+flask.sip*.25,1);
  }
- if(a.state==='windup')shape(fx,'sphere',identity(),[a.x,h+12,a.y],[3,3,3],effectLight(a),.9,1);
+ if(a.type==='boss'&&a.state==='windup')shape(fx,'sphere',identity(),[a.x,h+12,a.y],[3,3,3],effectLight(a),.9,1);
 }
 function renderBossHazards(fx){
  for(const h of bossHazards){
@@ -1467,10 +1468,6 @@ function telegraph3(fx,a){
  if(a.type==='boss'){
   if(a.state==='recover'&&a.parried)ring3(fx,a.x,a.y,a.r+12,a.r+9,'#d9f7ff',.65);return;
  }
- if(a.state!=='windup')return;const c=effectLight(a);
- if(a.kind==='lunge'){const root=matMul(translate(a.x,.9,a.y),rotateY(-a.attackAngle));shape(fx,'cube',root,[130,0,0],[396,.3,136],c,.2,1)}
- else if(a.kind!=='grave')ring3(fx,a.x,a.y,a.attackRange,0,c,.17,a.kind==='sweep'?0:a.attackAngle-a.attackArc,a.kind==='sweep'?Math.PI*2:a.attackAngle+a.attackArc);
- if(a.kind==='grave'||a.quake)for(const p of a.marks){ring3(fx,p.x,p.y,78,74,c,.8);ring3(fx,p.x,p.y,78*clamp(1-a.timer/a.windup,0,1),0,c,.2)}
 }
 function render(){
  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);

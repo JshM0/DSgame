@@ -7,7 +7,7 @@
 <style>
 :root{color-scheme:dark;--gold:#d0ae70;--ink:#101115;--muted:#b0aaa0}*{box-sizing:border-box}body{margin:0;background:#08090c;color:#eee5d6;font-family:Georgia,serif;overflow:hidden}canvas{display:block;width:100vw;height:100vh;touch-action:none}button{font:inherit;color:#eee5d6;border:1px solid #756044;background:#24221e;padding:12px 20px;cursor:pointer;transition:background .15s}button:hover,button:focus-visible{background:#423827;outline:2px solid var(--gold);outline-offset:3px}button:disabled{opacity:.4;cursor:default}.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:#080a10d9;z-index:4}.panel{max-width:620px;width:100%;padding:38px;background:linear-gradient(145deg,#202126,#111217);border:1px solid #655338;box-shadow:0 25px 100px #000}.eyebrow{font:11px system-ui,sans-serif;letter-spacing:4px;color:var(--gold);text-transform:uppercase}h1{font-weight:400;font-size:clamp(40px,7vw,68px);letter-spacing:3px;margin:12px 0}h2{font-weight:400;font-size:34px;margin:10px 0 16px}p{line-height:1.6;color:#c8c1b6}.keys{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;margin:25px 0;color:#b5b0a8;font:13px system-ui,sans-serif}kbd{display:inline-block;color:#f2dec0;min-width:55px;font:12px system-ui,sans-serif}.actions{display:flex;gap:10px;flex-wrap:wrap}.hidden{display:none!important}#hud{pointer-events:none;position:fixed;inset:0;z-index:1;font-family:system-ui,sans-serif}#vitals{position:absolute;top:24px;left:26px;width:min(290px,44vw)}.label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#bbb6ad;display:flex;justify-content:space-between;margin-bottom:5px}.bar{height:10px;background:#0b0d12b8;border:1px solid #5c5146;margin-bottom:11px}.fill{height:100%;transition:width .08s linear}#hp{background:#aa4941}#stamina{background:#78916b}#stats{display:flex;gap:18px;font-size:12px;color:#ddc8a7;margin-top:12px}#objective{position:absolute;top:26px;right:26px;text-align:right;max-width:36vw}#objective strong{display:block;font:17px Georgia,serif;color:#d4bc8d;margin-bottom:7px}#objective span{font-size:12px;color:#a6a6a6}#hint{position:absolute;bottom:28px;width:100%;text-align:center;font-size:12px;color:#c4beb2;letter-spacing:1px}#toast{position:absolute;top:28%;width:100%;text-align:center;font:22px Georgia,serif;color:#f0d9aa;opacity:0;transition:opacity .25s;text-shadow:0 2px 7px #000}#bossUI{position:absolute;bottom:75px;left:25%;width:50%;display:none}#bossUI .label{color:#d1b7ac;font:16px Georgia,serif;letter-spacing:2px}#bossHp{background:#8b3b43}#shopStats{color:var(--gold)}.upgrade{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-top:1px solid #474037}.upgrade small{display:block;font:12px system-ui,sans-serif;color:#a9a49d;margin-top:5px}#death .panel{text-align:center}#death h2{color:#be5c54;letter-spacing:6px}#victory .panel{text-align:center}#pause .panel{max-width:500px}footer{font:11px system-ui,sans-serif;color:#85827c;margin-top:24px;line-height:1.6}@media(max-width:600px){.panel{padding:24px}.keys{grid-template-columns:1fr}#objective{max-width:40vw}#objective span{display:none}#vitals{left:14px;top:16px}#hint{font-size:10px}}
 </style>
-<style>.panel{max-height:calc(100vh - 48px);overflow-y:auto}.overlay{overflow-y:auto}@media(max-width:700px){#combatReadout{top:210px!important}}</style>
+<style>.panel{max-height:calc(100vh - 48px);overflow-y:auto}.overlay{overflow-y:auto}#hud.bossEncounter #toast{top:240px;font-size:18px;padding:0 18px;box-sizing:border-box}@media(max-width:1320px){#bossUI{bottom:224px}}@media(max-width:700px){#bossUI{bottom:174px}#hud.bossEncounter #toast{top:310px}}</style>
 <style>.audioSettings{border-top:1px solid #474037;margin-top:20px;padding-top:16px;display:grid;gap:12px}.audioSettings label{font:13px system-ui,sans-serif;color:#c8c1b6}.audioSettings output{float:right;color:var(--gold)}.audioSettings input{width:100%;accent-color:var(--gold)}.audioSettings p{margin:0;font:12px system-ui,sans-serif;color:#a9a49d}.audioSettings button{justify-self:start}</style>
 <style>.classPicker{border:0;border-top:1px solid #655338;margin:22px 0;padding:15px 0 0}.classPicker legend{padding-right:12px;color:var(--gold);font-size:16px}.classGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.classCard{display:grid;grid-template-columns:auto 1fr;gap:5px 8px;padding:12px;border:1px solid #514a42;background:#17191d;cursor:pointer}.classCard:has(input:checked){border-color:var(--gold);background:#373027}.classCard input{accent-color:var(--gold);margin:3px 0}.classCard strong{font-size:15px;font-weight:400}.classCard small{grid-column:2;font:11px system-ui;color:#b5b0a8}.classPicker p{font:12px/1.6 system-ui;margin-bottom:0}#classText{color:var(--gold)}@media(max-width:440px){.classGrid{grid-template-columns:1fr}}</style>
 </head>
@@ -98,7 +98,7 @@ function updateView3D(){
  if(walls.some(w=>overlaps(target[0],target[2],ARCH.cameraRadius,w)))target=anchor.slice();
  const horizontal=Math.cos(VIEW.pitch)*VIEW.distance;
  const desired=[target[0]+Math.sin(VIEW.yaw)*horizontal,Math.min(ARCH.maxEyeHeight,42+Math.sin(VIEW.pitch)*VIEW.distance),target[2]+Math.cos(VIEW.yaw)*horizontal];
- const eye=constrainCamera(anchor,desired);
+ const eye=resolveCameraObstruction(anchor,target,desired);
  const forward=vnorm(vsub(target,eye)),right=vnorm(vcross(forward,[0,1,0])),up=vcross(right,forward);
  view3D={eye,target,forward,right,up,vp:matMul(perspective(VIEW.fov,width/Math.max(1,height),2,5500),lookAt(eye,target))};
 }
@@ -133,6 +133,7 @@ function aimPlayer(){if(!player)return;if(lockTarget&&lockTarget.hp>0){player.an
 }
 function movementInput(){const x=(keys.has('d')?1:0)-(keys.has('a')?1:0),y=(keys.has('s')?1:0)-(keys.has('w')?1:0);return {x:x*Math.cos(VIEW.yaw)+y*Math.sin(VIEW.yaw),y:-x*Math.sin(VIEW.yaw)+y*Math.cos(VIEW.yaw)}}
 function followCamera(dt,snap=false){
+ if(snap){camera.obstructionOffset=0;camera.obstructionTime=time}
  let target=player||{x:380,y:1200};const blend=snap?1:1-Math.exp(-10*dt);
  if(lockTarget&&player&&mode==='play'){
   const d=dist(player,lockTarget),framing=Math.min(.26,100/Math.max(1,d));target={x:player.x+(lockTarget.x-player.x)*framing,y:player.y+(lockTarget.y-player.y)*framing};
@@ -248,9 +249,23 @@ function cameraEntry(start,end,solid,padding=ARCH.cameraRadius){
  }
  return enter>=0&&enter<=1?enter:null;
 }
-function constrainCamera(start,end){
- let fraction=1;for(const solid of cameraSolids()){const entry=cameraEntry(start,end,solid);if(entry!==null)fraction=Math.min(fraction,Math.max(0,entry-.012))}
+function constrainCamera(start,end,solids=cameraSolids()){
+ let fraction=1;for(const solid of solids){const entry=cameraEntry(start,end,solid);if(entry!==null)fraction=Math.min(fraction,Math.max(0,entry-.012))}
  return blendPoint(start,end,fraction);
+}
+function resolveCameraObstruction(anchor,target,desired){
+ const solids=cameraSolids(),base=constrainCamera(anchor,desired,solids),distance=p=>Math.hypot(p[0]-anchor[0],p[1]-anchor[1],p[2]-anchor[2]),minimum=Math.min(90,VIEW.distance*.55);
+ const dt=Math.max(0,time-(camera.obstructionTime??time));camera.obstructionTime=time;
+ let offset=camera.obstructionOffset||0;
+ // A side view prevents walls from squeezing the eye inside the character mesh.
+ if(distance(base)>=minimum+40){offset*=Math.exp(-4*dt);if(Math.abs(offset)<.025){camera.obstructionOffset=0;return base}}
+ if(!offset&&distance(base)>=minimum)return base;
+ const horizontal=Math.cos(VIEW.pitch)*VIEW.distance,at=angle=>constrainCamera(anchor,[target[0]+Math.sin(VIEW.yaw+angle)*horizontal,desired[1],target[2]+Math.cos(VIEW.yaw+angle)*horizontal],solids);
+ if(offset){const previous=at(offset);if(distance(previous)>=minimum){camera.obstructionOffset=offset;return previous}}
+ let best=base,bestOffset=0,bestDistance=distance(base);
+ const angles=[.65,-.65,1.2,-1.2,Math.PI/2,-Math.PI/2,1.8,-1.8,2.4,-2.4,Math.PI];for(const axis of [0,Math.PI/2,Math.PI,-Math.PI/2])angles.push(angleDiff(axis,VIEW.yaw));if(offset)angles.sort((a,b)=>Math.abs(angleDiff(a,offset))-Math.abs(angleDiff(b,offset)));
+ for(const angle of angles){const eye=at(angle),d=distance(eye);if(d>bestDistance){best=eye;bestOffset=angle;bestDistance=d}if(d>=Math.max(minimum,VIEW.distance*.6)){best=eye;bestOffset=angle;break}}
+ camera.obstructionOffset=bestOffset;return best;
 }
 const spawns=[{x:900,y:1120,type:'warden'},{x:1020,y:1400,type:'warden'},
  {x:1270,y:1170,type:'knight'},{x:1750,y:1080,type:'warden'},{x:2050,y:1350,type:'knight'},
@@ -392,7 +407,7 @@ const Music={
  }
 };
 function sound(freq=130,duration=.12,type='triangle',volume=.05){if(muted||!audio)return;try{const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(freq,audio.currentTime);o.frequency.exponentialRampToValueAtTime(Math.max(20,freq*.45),audio.currentTime+duration);g.gain.setValueAtTime(volume,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);o.connect(g);g.connect(audioMixer?audioMixer.fx:audio.destination);o.onended=()=>{o.disconnect();g.disconnect()};o.start();o.stop(audio.currentTime+duration)}catch{}}
-function setMode(next){mode=next;keys.clear();if(next!=='play'){lockTarget=null;hitStop=0;cancelClassAbility();$('combatReadout').style.display='none'}for(const id of ['start','shop','pause','death','victory'])$(id).classList.toggle('hidden',id!==next);$('hud').classList.toggle('hidden',next==='start');orbiting=false;canvas.style.cursor=next==='play'?'crosshair':'default';if(next==='play')Music.unlock();Music.sync();if(player&&['pause','shop','death','victory','start'].includes(next))Save.write();}
+function setMode(next){mode=next;keys.clear();if(next!=='play'){lockTarget=null;hitStop=0;cancelClassAbility();$('hud').classList.toggle('bossEncounter',false)}for(const id of ['start','shop','pause','death','victory'])$(id).classList.toggle('hidden',id!==next);$('hud').classList.toggle('hidden',next==='start');orbiting=false;canvas.style.cursor=next==='play'?'crosshair':'default';if(next==='play')Music.unlock();Music.sync();if(player){updateLock(0);updateClassAbility(0);updateHud()}if(player&&['pause','shop','death','victory','start'].includes(next))Save.write();}
 
 $('musicToggle').onclick=()=>{musicEnabled=!musicEnabled;$('musicToggle').textContent='Music: '+(musicEnabled?'on':'off');$('musicToggle').setAttribute('aria-pressed',String(musicEnabled));Music.sync()};
 $('musicVolume').oninput=()=>{musicVolume=clamp(Number($('musicVolume').value)||0,0,100)/100;$('musicLevel').textContent=Math.round(musicVolume*100)+'%';Music.sync()};
@@ -401,10 +416,10 @@ document.addEventListener('visibilitychange',()=>Music.sync());
 // Original procedural poses informed by Eric Jacobus's Demon’s Souls mocap account:
 // https://blog.playstation.com/2021/03/26/what-demons-souls-can-teach-stunt-performers-about-human-movement/
 // Opening pose → anticipation → strike → recovery → end pose. Combat timings remain authoritative.
-const DODGE={duration:.48,distance:150.4,iframes:.32};
+const DODGE={duration:.48,distance:150.4,iframes:.24};
 function neutralFoot(a,side,angle=a.renderAngle){const h=actorHeight(a),right=[-Math.sin(angle),Math.cos(angle)];return [a.x+right[0]*side*h*.06,0,a.y+right[1]*side*h*.06]}
 function resetMotion(a){
- Object.assign(a,{parry:0,abilityCd:0,guarding:false,guardWarmup:0,guardBroken:0,defenseBlend:0,chargeBlend:0,chargingSpell:false,chargeTime:0,chargePower:0,riposte:0,riposteTarget:null,counterWindow:0,counterTarget:null,perfectAwarded:false,specialStrike:null,strikeBonusTarget:null});
+ Object.assign(a,{stanceDamage:0,stanceDelay:0,stanceGrace:0,parry:0,abilityCd:0,guarding:false,guardWarmup:0,guardBroken:0,defenseBlend:0,chargeBlend:0,chargingSpell:false,chargeTime:0,chargePower:0,riposte:0,riposteTarget:null,counterWindow:0,counterTarget:null,perfectAwarded:false,specialStrike:null,strikeBonusTarget:null});
  Object.assign(a,{walkPhase:0,walkWeight:0,moveX:0,moveY:1,worldMoveX:0,worldMoveZ:0,moveSpeed:0,renderAngle:a.angle||0,animTime:0,rollTrail:[],trailTimer:0,bodyLean:0,clothLag:0,clothVelocity:0,hitRecoil:0,attackHit:false,strikeHits:0,attackCount:0,attackKind:'forehand',attackQueued:null,queueTimer:0,lastAttackTime:-10,footMode:'idle',attackFeet:null});
  a.feet=[-1,1].map(side=>({pos:neutralFoot(a,side),from:null,target:null,cycle:-1,grounded:true,pitch:0,yaw:a.renderAngle,settle:1,phase:0}));
 }
@@ -458,19 +473,19 @@ const ATTACKS={
  twohand:{name:'Two-handed strike',duration:.7,impact:.32,stamina:38,damage:1.65,range:120,arc:.7,knockback:26}
 };
 const PLAYER_CLASSES={
- swordsman:{name:'Swordsman',hp:100,st:100,damage:25,speed:175,regen:34,defense:1,height:62,dodgeCost:30,dodgeDistance:150.4,dodgeCd:.62,iframes:.32,weaponLength:58,
+ swordsman:{name:'Swordsman',hp:100,st:100,damage:25,speed:175,regen:34,defense:1,height:62,dodgeCost:30,dodgeDistance:150.4,dodgeCd:.62,iframes:.24,weaponLength:58,
   combo:['forehand','backhand','twohand'],attacks:ATTACKS,upgrade:'Tempered blade',power:'Blade',description:'Balanced swordplay. Click chains forehand, backhand, and two-handed cuts; right-click delivers a heavy strike.'},
- heavy:{name:'Heavy Swordsman',hp:140,st:115,damage:35,speed:142,regen:29,defense:.82,height:68,dodgeCost:36,dodgeDistance:125,dodgeCd:.78,iframes:.27,weaponLength:82,
+ heavy:{name:'Heavy Swordsman',hp:140,st:115,damage:35,speed:142,regen:29,defense:.82,height:68,dodgeCost:36,dodgeDistance:125,dodgeCd:.78,iframes:.20,weaponLength:82,
   combo:['forehand','backhand','twohand'],upgrade:'Tempered greatsword',power:'Greatsword',description:'Armored, slower, and resistant to damage. Both hands wield a greatsword; right-click commits to a crushing overhead blow.',attacks:{
    forehand:{name:'Greatsword sweep',duration:.72,impact:.32,stamina:31,damage:1,range:140,arc:1.05,knockback:25},
    backhand:{name:'Greatsword return',duration:.78,impact:.35,stamina:33,damage:1.12,range:145,arc:1.1,knockback:28},
    twohand:{name:'Crushing overhead',duration:1.02,impact:.50,stamina:48,damage:1.85,range:155,arc:.65,knockback:42}}},
- assassin:{name:'Assassin',hp:80,st:125,damage:18,speed:205,regen:42,defense:1,height:59,dodgeCost:23,dodgeDistance:175,dodgeCd:.5,iframes:.34,weaponLength:29,
+ assassin:{name:'Assassin',hp:80,st:125,damage:18,speed:205,regen:42,defense:1,height:59,dodgeCost:23,dodgeDistance:175,dodgeCd:.5,iframes:.27,weaponLength:29,
   combo:['forehand','backhand','twohand'],upgrade:'Honed twin blades',power:'Daggers',description:'A swift, fragile dual wielder. Click alternates daggers; right-click lands a two-hit crosscut. Strikes from behind gain 25% damage.',attacks:{
    forehand:{name:'Right dagger',duration:.27,impact:.10,stamina:15,damage:1,range:86,arc:.9,knockback:5},
    backhand:{name:'Left dagger',duration:.26,impact:.095,stamina:15,damage:1.05,range:86,arc:.95,knockback:5},
    twohand:{name:'Twin crosscut',duration:.47,impact:.18,hits:[.18,.29],stamina:28,damage:.9,range:92,arc:1.2,knockback:9}}},
- wizard:{name:'Wizard',hp:75,st:100,damage:27,speed:165,regen:38,defense:1,height:62,dodgeCost:28,dodgeDistance:145,dodgeCd:.62,iframes:.30,weaponLength:62,
+ wizard:{name:'Wizard',hp:75,st:100,damage:27,speed:165,regen:38,defense:1,height:62,dodgeCost:28,dodgeDistance:145,dodgeCd:.62,iframes:.23,weaponLength:62,
   combo:['forehand','backhand','twohand'],upgrade:'Arcane mastery',power:'Spell power',description:'A fragile caster with limited spell range. Click chains Arcane Bolt, Twin Sparks, and Arcane Lance; right-click casts a longer-range piercing lance. Spells use stamina.',attacks:{
    forehand:{name:'Arcane Bolt',duration:.56,impact:.24,stamina:20,damage:1,range:420,projectile:true,speed:560,radius:8,pierce:1,knockback:4},
    backhand:{name:'Twin Sparks',duration:.64,impact:.28,hits:[.28,.39],stamina:27,damage:.65,range:380,projectile:true,speed:590,radius:7,pierce:1,knockback:3},
@@ -658,7 +673,9 @@ function solveLimb(start,target,upper,lower,bend=1){
  return {end,joint:[start[0]+ux*along-uy*across,start[1]+uy*along+ux*across]};
 }
 function dodgePose(a){const t=clamp(1-a.roll/DODGE.duration,0,1),tuck=t<.16?smooth(t/.16):t>.78?1-smooth((t-.78)/.22):1,tumble=smooth((t-.12)/.66);return {t,tuck,tumble,squash:1-.24*tuck,lift:Math.sin(t*Math.PI)*3.5,rotation:-tumble*Math.PI*2}}
-const FLASK_DURATION=.8;
+const FLASK_DURATION=1.05;
+// Combat tuning applies equally to new journeys and resumed checkpoints.
+const CHALLENGE={enemyHealth:1.15,bossHealth:1.2,enemyDamage:1.35,bossDamage:1.4,pursuitSpeed:1.1,staminaRegen:.85,flaskHealing:50,bossAwakening:.6};
 function flaskPose(a){
  if(a!==player||!(a.heal>0)||a.hp<=0)return {blend:0,visible:false,hand:[-17,5,0],tilt:0,sip:0};
  const t=clamp(1-a.heal/FLASK_DURATION,0,1),keys=[
@@ -668,12 +685,12 @@ function flaskPose(a){
  const [x,y,z,tilt,sip]=samplePose(keys,t);
  return {blend:smooth(Math.min(t/.14,(1-t)/.14,1)),visible:t>=.12&&t<.94,hand:[x,y,z],tilt,sip};
 }
-function makeEnemies(){return spawns.map(s=>{const p=bossProfiles[s.bossId],q=enemyProfiles[s.type],hp=p?p.hp:q.hp;const e={...s,r:p?32:q.r,hp:defeatedBosses.has(s.bossId)?0:hp,maxHp:hp,speed:p?p.speed:q.speed,state:'idle',timer:0,angle:Math.PI,attackAngle:0,cooldown:0,flash:0,phase:1,attackCount:0,engaged:false,homeX:s.x,homeY:s.y,marks:[]};resetMotion(e);return e})}
+function makeEnemies(){return spawns.map(s=>{const p=bossProfiles[s.bossId],q=enemyProfiles[s.type],hp=Math.round((p?p.hp:q.hp)*(p?CHALLENGE.bossHealth:CHALLENGE.enemyHealth));const e={...s,r:p?32:q.r,hp:defeatedBosses.has(s.bossId)?0:hp,maxHp:hp,speed:(p?p.speed:q.speed)*CHALLENGE.pursuitSpeed,state:'idle',timer:0,angle:Math.PI,attackAngle:0,cooldown:0,flash:0,phase:1,attackCount:0,engaged:false,homeX:s.x,homeY:s.y,marks:[]};resetMotion(e);return e})}
 function newRun(classId=selectedClass,persist=true){
  const id=typeof classId==='string'&&PLAYER_CLASSES[classId]?classId:selectedClass,c=PLAYER_CLASSES[id];
  player={classId:id,x:320,y:1200,r:16,hp:c.hp,maxHp:c.hp,st:c.st,maxSt:c.st,damage:c.damage,souls:0,flasks:3,angle:0,attack:0,attackCd:0,roll:0,rollCd:0,invuln:0,heal:0,regenDelay:0,levels:{hp:0,damage:0,st:0}};
  resetMotion(player);lockTarget=null;hitStop=shake=0;impactLabels=[];saveClock=0;playerProjectiles=[];defeatedBosses.clear();enemies=makeEnemies();particles=[];stain=null;activeBonfire=0;claimedCaches.clear();deaths=kills=runTime=0;bossEngaged=false;arenaBossId=null;bossHazards=[];
- $('classControls').textContent=c.description+' '+CLASS_ABILITIES[id]+' Click late in recovery to queue the next attack. F locks on; Tab changes target. Space dodges; Q drinks a flask. Boss symbols: P = parryable; G = guardable; ! = dodge or reposition.';followCamera(0,true);setMode('play');toast(c.name+' enters the fallen kingdom.');updateClassAbility(0);updateHud();if(persist)Save.write();
+ $('classControls').textContent=c.description+' '+CLASS_ABILITIES[id]+' Click late in recovery to queue the next attack. F locks on; Tab changes target. Space dodges; Q drinks a flask.';followCamera(0,true);setMode('play');toast(c.name+' enters the fallen kingdom.');updateClassAbility(0);updateHud();if(persist)Save.write();
 }
 const Save={
  key:'ashen-keep-save-v1',issue:'',loading:false,
@@ -718,10 +735,6 @@ function drawCombatFeedback(){
  updateBossReadout();
  if(!player||mode!=='play')return;ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
  for(const label of impactLabels){const p=project(label.x,label.y,label.height+(1-label.life/.8)*28);if(!p.visible)continue;ctx.globalAlpha=Math.min(1,label.life*5);ctx.font=(label.heavy?'bold 19px':'bold 14px')+' system-ui';ctx.lineWidth=3;ctx.strokeStyle='#090a10';ctx.fillStyle=label.heavy?'#ffe4a1':'#f0d9c5';ctx.strokeText(label.text,p.x,p.y);ctx.fillText(label.text,p.x,p.y)}
- ctx.globalAlpha=1;for(const e of enemies)if(e.type==='boss'&&e.hp>0&&e.state==='windup'&&e.moveSpec&&dist(e,player)<900&&lineClear(player,e)){
-  const p=project(e.x,e.y,actorHeight(e)+28);if(!p.visible)continue;const spec=e.moveSpec;ctx.strokeStyle=ctx.fillStyle=spec.parryable?'#c6eef3':spec.blockable?'#f1d6a2':'#e0b5e4';ctx.lineWidth=e.cueFired?2.5:1.5;ctx.beginPath();
-  if(spec.parryable)ctx.arc(p.x,p.y,11,0,Math.PI*2);else if(spec.blockable)ctx.rect(p.x-10,p.y-10,20,20);else{ctx.moveTo(p.x,p.y-13);ctx.lineTo(p.x+13,p.y);ctx.lineTo(p.x,p.y+13);ctx.lineTo(p.x-13,p.y);ctx.closePath()}ctx.stroke();ctx.font='bold 11px system-ui';ctx.fillText(spec.parryable?'P':spec.blockable?'G':'!',p.x,p.y);
- }
  ctx.globalAlpha=1;if(lockTarget&&lockObscured===0){const p=project(lockTarget.x,lockTarget.y,actorHeight(lockTarget)*.7);if(p.visible){ctx.strokeStyle='#f5dfae';ctx.fillStyle='#fff4d8';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(p.x,p.y,8,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(p.x,p.y,2.2,0,Math.PI*2);ctx.fill()}}
  ctx.restore();
 }
@@ -740,14 +753,25 @@ function attack(forcedKind=null,special=null){
  cancelClassAbility();player.specialStrike=special;if(special!=='charged')player.chargePower=0;
  player.strikeBonusTarget=player.riposte>0?player.riposteTarget:null;player.riposte=0;player.riposteTarget=null;
  player.attackKind=kind;player.attackCount=forcedKind?0:count+1;player.lastAttackTime=runTime;player.strikeAngle=player.angle;player.attackHit=false;player.strikeHits=0;player.attackQueued=null;
- player.st-=cost;player.regenDelay=kind==='twohand'?.8:.65;player.attack=hit.duration;player.attackCd=hit.duration;
+ player.st-=cost;player.regenDelay=player.st<1?1.2:kind==='twohand'?.95:.8;player.attack=hit.duration;player.attackCd=hit.duration;
  sound(kind==='twohand'?100:150,.1,'triangle',.02);
 }
 function damageEnemy(e,damage,hit,angle){
  if(e.hp<=0)return;const amount=Math.round(damage),heavy=player.classId!=='wizard'&&(player.classId==='heavy'||player.attackKind==='twohand'),weight=heavy?2:1;
- e.hp-=amount;e.flash=.18;e.hitRecoil=.22;e.hitDirection=angle;e.hitWeight=weight;hitStop=Math.max(hitStop,heavy?.065:player.classId==='wizard'?.022:.038);shake=Math.max(shake,heavy?3.5:1.3);
+ e.hp-=amount;e.flash=.18;e.hitRecoil=e.type==='boss'?.07:.22;e.hitDirection=angle;e.hitWeight=weight;hitStop=Math.max(hitStop,heavy?.065:player.classId==='wizard'?.022:.038);shake=Math.max(shake,heavy?3.5:1.3);
  impactLabels.push({x:e.x,y:e.y,height:actorHeight(e)+12,text:String(amount),heavy,life:.8});if(impactLabels.length>24)impactLabels.shift();burst(e.x,e.y,e.type==='boss'?bossProfiles[e.bossId].light:'#ac665a',10);
- if(e.type!=='boss'&&hit.knockback)move(e,Math.cos(angle)*hit.knockback,Math.sin(angle)*hit.knockback);
+ const armored=e.type==='boss'||['knight','sentinel','brute'].includes(e.type);
+ if(e.hp>0&&(e.stanceGrace||0)<=0){
+  const pressure=hit.projectile?(hit.knockback>=15?24:8):(hit.knockback||5)*.65+6;
+  e.stanceDamage=(e.stanceDamage||0)+pressure;e.stanceDelay=3;
+  const limit=e.type==='boss'?130:armored?65:38;
+  if(e.stanceDamage>=limit){
+   e.stanceDamage=0;e.stanceGrace=2.5;e.state='recover';e.parried=false;e.recoveryDuration=e.type==='boss'?1.15:.85;e.timer=e.recoveryDuration;e.cooldown=.3;e.hitRecoil=.3;
+   for(const h of bossHazards)if(h.owner===e&&h.age<h.delay)h.expired=true;
+   burst(e.x,e.y,'#e7d4ad',14);impactSound(2.5,true);
+  }
+ }
+ if(e.type!=='boss'&&hit.knockback){const push=hit.knockback*(armored&&e.state==='windup'?.15:armored?.45:1);move(e,Math.cos(angle)*push,Math.sin(angle)*push);}
  impactSound(weight,e.type==='knight'||e.type==='sentinel'||e.type==='boss');
  if(e.hp<=0){
   const reward=e.type==='boss'?bossProfiles[e.bossId].reward:enemyProfiles[e.type].reward;player.souls+=reward;kills++;burst(e.x,e.y,'#dbc68d',24);
@@ -781,7 +805,7 @@ function updatePlayerProjectiles(dt){
    const before={x:p.x,y:p.y};p.x+=Math.cos(p.angle)*travel/steps;p.y+=Math.sin(p.angle)*travel/steps;p.remaining-=travel/steps;
    if(blocked(p.x,p.y,4)||!lineClear(before,p)){p.dead=true;burst(p.x,p.y,p.color,5);break}
    for(const e of enemies)if(e.hp>0&&!p.hits.has(e)&&dist(p,e)<e.r+p.radius){
-    p.hits.add(e);damageEnemy(e,p.damage,{knockback:p.knockback},p.angle);burst(p.x,p.y,p.color,9);
+    p.hits.add(e);damageEnemy(e,p.damage,{knockback:p.knockback,projectile:true},p.angle);burst(p.x,p.y,p.color,9);
     if(--p.pierce<=0){p.dead=true;break}
    }
    if(p.dead||mode!=='play')break;
@@ -790,10 +814,11 @@ function updatePlayerProjectiles(dt){
  }playerProjectiles=mode==='play'?playerProjectiles.filter(p=>!p.dead):[];
 }
 
-function roll(){if(mode!=='play'||player.guardBroken>0||player.parry>0||player.rollCd>0||player.heal>0||player.attack>strikeProfile().duration*.42)return;if(player.st<playerClass().dodgeCost){toast('You need '+playerClass().dodgeCost+' stamina to dodge.');return}cancelClassAbility();player.perfectAwarded=false;let {x,y}=movementInput();const a=x||y?Math.atan2(y,x):player.angle;player.attack=0;player.attackQueued=null;player.queueTimer=0;player.rollAngle=a;player.roll=DODGE.duration;player.walkWeight=0;player.rollTrail=[];player.trailTimer=0;player.rollCd=playerClass().dodgeCd;player.invuln=playerClass().iframes;player.st-=playerClass().dodgeCost;player.regenDelay=.65;sound(240,.12,'triangle',.035)}
+function roll(){if(mode!=='play'||player.guardBroken>0||player.parry>0||player.rollCd>0||player.heal>0||player.attack>strikeProfile().duration*.28)return;if(player.st<playerClass().dodgeCost){toast('You need '+playerClass().dodgeCost+' stamina to dodge.');return}cancelClassAbility();player.perfectAwarded=false;let {x,y}=movementInput();const a=x||y?Math.atan2(y,x):player.angle;player.attack=0;player.attackQueued=null;player.queueTimer=0;player.rollAngle=a;player.roll=DODGE.duration;player.walkWeight=0;player.rollTrail=[];player.trailTimer=0;player.rollCd=playerClass().dodgeCd;player.invuln=playerClass().iframes;player.st-=playerClass().dodgeCost;player.regenDelay=player.st<1?1.2:.85;sound(240,.12,'triangle',.035)}
 function heal(){if(mode!=='play'||player.guardBroken>0||player.parry>0||player.heal>0||player.roll>0||player.attack>0)return;if(player.flasks<=0){toast('Your flasks are empty. Rest at the bonfire.');return}if(player.hp>=player.maxHp){toast('Your vitality is already full.');return}cancelClassAbility();player.flasks--;player.heal=FLASK_DURATION;sound(450,.4,'sine',.045);toast('Drinking a flask… stay clear of enemy attacks.')}
 function hurt(damage,source=null,options={}){
  if(mode!=='play')return 'inactive';
+ damage*=source?.type==='boss'?CHALLENGE.bossDamage:CHALLENGE.enemyDamage;
  if(player.invuln>0){
   if(source&&source.hp>0&&player.classId==='assassin'&&player.roll>0&&DODGE.duration-player.roll<=.18&&!player.perfectAwarded){player.perfectAwarded=true;player.counterWindow=1.4;player.counterTarget=source;burst(player.x,player.y,'#c7efff',10);toast('Perfect evade · close in and press R to counter.');sound(740,.1,'sine',.03)}
   return 'immune';
@@ -808,7 +833,7 @@ function hurt(damage,source=null,options={}){
   const cost=6+damage*.85;if(player.st>=cost){player.st-=cost;player.regenDelay=.8;player.hp=Math.max(0,player.hp-Math.max(1,Math.round(damage*playerClass().defense*.1)));player.invuln=.22;hitStop=Math.max(hitStop,.035);burst(player.x,player.y,'#d8c18c',8);impactSound(1.5,true);if(player.st<.001)breakGuard();if(player.hp<=0)die();return 'blocked'}
   breakGuard();
  }
- cancelClassAbility();player.hp=Math.max(0,player.hp-Math.max(1,Math.round(damage*playerClass().defense)));player.invuln=.55;player.hitRecoil=.18;hitStop=Math.max(hitStop,.045);shake=5;burst(player.x,player.y,'#c25651',18);impactSound(1,true);
+ cancelClassAbility();player.hp=Math.max(0,player.hp-Math.max(1,Math.round(damage*playerClass().defense)));player.invuln=.42;player.hitRecoil=.18;hitStop=Math.max(hitStop,.045);shake=5;burst(player.x,player.y,'#c25651',18);impactSound(1,true);
  if(player.attack>strikeProfile().duration-strikeProfile().impact){player.attack=0;player.attackQueued=null;player.attackCd=Math.max(player.attackCd,.2)}if(player.heal>0){player.heal=0;toast('Healing interrupted.')}if(player.hp<=0)die();return 'hurt';
 }
 function die(){playerProjectiles=[];deaths++;stain={x:player.x,y:player.y,souls:player.souls};player.souls=0;$('deathText').textContent=stain.souls+' souls await at your bloodstain. Recover them with E before you fall again.';setMode('death');sound(60,.7,'sine',.08)}
@@ -826,7 +851,6 @@ $('start').querySelector('footer').textContent='Designed for keyboard and mouse.
 for(const id of ['start','pause'])$(id).querySelector('.keys').insertAdjacentHTML('beforeend','<div><kbd>F</kbd> Lock / release target</div><div><kbd>Tab</kbd> Switch target</div><div><kbd>R</kbd> Class ability · hold for guard / charge</div>');
 $('pause').querySelector('.panel').insertAdjacentHTML('beforeend','<p id="pauseSaveStatus" style="font:12px/1.6 system-ui;color:#b5b0a8"></p>');$('classText').insertAdjacentHTML('afterend','<span id="lockStatus" style="flex-basis:100%;font-size:11px;color:#d4bc8d">F · Lock on</span>');
 $('lockStatus').insertAdjacentHTML('afterend','<span id="abilityStatus" style="flex-basis:100%;font-size:11px;line-height:1.5;color:#c6d5e6"></span>');
-$('hud').insertAdjacentHTML('beforeend','<div id="combatReadout" style="display:none;position:absolute;top:142px;left:50%;transform:translateX(-50%);width:min(420px,86vw);text-align:center;background:#10121bdd;border:1px solid #756044;padding:10px 14px"><div id="attackName" style="font:15px Georgia,serif;color:#f0dfc3"></div><div id="attackResponse" style="font:11px/1.6 system-ui;color:#d6cfc4;margin:4px 0 8px"></div><div style="height:3px;background:#292832"><div id="attackMeter" style="height:100%;width:0"></div></div></div>');
 $('begin').onclick=()=>{if(Save.read()&&!window.confirm('Begin a new journey? This replaces your saved journey.'))return;Music.unlock();newRun()};$('continueRun').onclick=()=>{Music.unlock();Save.resume()};$('again').onclick=()=>setMode('start');$('changeClass').onclick=()=>setMode('start');$('leave').onclick=()=>setMode('play');$('resume').onclick=()=>setMode('play');$('mute').onclick=()=>{muted=!muted;$('mute').textContent='Sound: '+(muted?'off':'on');Music.sync()};$('buyHp').onclick=()=>buy('hp');$('buyDamage').onclick=()=>buy('damage');$('buySt').onclick=()=>buy('st');
 $('revive').onclick=()=>{lockTarget=null;hitStop=shake=0;impactLabels=[];playerProjectiles=[];const b=bonfires[activeBonfire];player.x=b.x+60;player.y=b.y;player.hp=player.maxHp;player.st=player.maxSt;player.flasks=3;player.roll=player.attack=player.heal=player.attackCd=player.rollCd=0;player.invuln=1;resetMotion(player);enemies=makeEnemies();bossEngaged=false;arenaBossId=null;bossHazards=[];followCamera(0,true);setMode('play');toast('Rise at '+b.name+'. Your bloodstain waits.');Save.write()};
 addEventListener('keydown',e=>{const key=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright','tab'].includes(key)&&mode==='play')e.preventDefault();if(e.repeat)return;if(key==='escape'){if(mode==='play')setMode('pause');else if(mode==='pause'||mode==='shop')setMode('play');return}if(key==='f'){toggleLock();return}if(key==='tab'&&mode==='play'){cycleLock();return}keys.add(key);if(key==='r'){classAbility();return}if(key===' ')roll();if(key==='shift')attack();if(key==='q')heal();if(key==='e')interact()});
@@ -888,38 +912,29 @@ const BOSS_CUES={
  eclipseRay:['ROTATING BEAM','CIRCLE THE BOSS'],starfall:['FALLING STARS','KEEP MOVING OUT OF THE MARKS'],eclipseHeart:['INNER / OUTER PULSES','OUT, THEN IN · WATCH FOR A THIRD PULSE']
 };
 for(const [id,cue]of Object.entries(BOSS_CUES))Object.assign(BOSS_MOVES[id],{intent:cue[0],response:cue[1],parryable:!!cue[2],blockable:!!cue[3]});
-function bossCue(e,imminent=false){const frequency=e.moveSpec.parryable?620:e.moveSpec.blockable?270:135;sound(frequency*(imminent?1.5:1),imminent?.07:.12,'triangle',imminent?.035:.022)}
 function updateBossReadout(){
- if(mode!=='play'||!player){$('combatReadout').style.display='none';return}
- let boss=lockTarget?.type==='boss'&&lockTarget.hp>0?lockTarget:null;
- if(!boss)for(const e of enemies)if(e.type==='boss'&&e.hp>0&&e.engaged&&(!boss||dist(e,player)<dist(boss,player)))boss=e;
- if(!boss||!boss.moveSpec||dist(boss,player)>900||!['windup','recover','charge'].includes(boss.state)){$('combatReadout').style.display='none';return}
- $('combatReadout').style.display='block';const spec=boss.moveSpec,windup=boss.state==='windup',hazards=bossHazards.some(h=>h.owner===boss&&!h.expired&&!h.warningOnly&&h.age<h.delay+h.duration);
- $('attackName').textContent=spec.name+' · '+(windup?spec.intent:boss.state==='charge'?'CHARGING':boss.parried?'STAGGERED':'RECOVERING');
- $('attackResponse').textContent=windup?spec.response:boss.state==='charge'?'Move across the charge path.':boss.parried?'Attack now for a riposte.':hazards?'Boss recovering · lingering attacks are still active.':'Opening · strike before the next wind-up.';
- $('attackMeter').style.width=(windup?clamp(1-boss.timer/boss.windup,0,1):clamp(boss.timer/(boss.recoveryDuration||1),0,1))*100+'%';
- $('attackMeter').style.background=windup?(spec.parryable?'#b9e5ed':spec.blockable?'#dec18b':'#d49fce'):'#9ebd9c';
+ const boss=mode==='play'&&player&&enemies.some(e=>e.type==='boss'&&e.hp>0&&e.engaged&&dist(e,player)<=900);
+ $('hud').classList.toggle('bossEncounter',!!boss);
 }
 let bossHazards=[];
-const bossLessons={
- king:['The crown splits: execution adds a cut; Crownwheel bursts inward.','Dodge the narrow thrust. Read the execution chain and inner/outer Crownwheel.'],
- thorn:['Roots form a third lane and the thorn volley widens.','Move between the root lanes; strafe the thorn volley and punish the impale.'],
- crypt:['More epitaphs and a longer procession rise from the graves.','Leave the locked circles. Step across the shrinking siphon ring.'],
- bell:['A fourth toll follows, and Bellchain ends with a close-range slam.','Roll through the tolling rings; avoid the narrow hook that pulls you in.'],
- curator:['The page storm spins faster and a third seeking scripture is released.','Leave the rotating page storm and living ink. Keep moving around seeking books.'],
- smith:['Fissures erupt together and a second molten hammer returns.','Leave the flame trail; find a gap in the five fissures. Watch the hammer return.'],
- winter:['The ice fan widens and glacial trails linger longer.','Strafe the ice fan. Escape the prison through its gaps; avoid the charge trail.'],
- drowned:['Blackwater’s safe center shrinks as the tide gathers strength.','Sidestep the moving tidal wall; stay inside the flood’s dry eye, then escape the hands.'],
- regent:['More stars fall; the eclipse ray accelerates and the heart pulses a third time.','Circle the rotating ray. Escape starfall, then alternate inner and outer safe zones.']
-};
-for(const [id,[awakening,advice]]of Object.entries(bossLessons)){bossProfiles[id].awakening=awakening;bossProfiles[id].advice=advice;delete bossProfiles[id].moves}
-function nextBossMove(e){return BOSS_MOVES[BOSS_MOVESETS[e.bossId][e.attackCount%BOSS_MOVESETS[e.bossId].length]]}
+for(const p of Object.values(bossProfiles)){p.awakening=p.name+' · AWAKENED';delete p.advice;delete p.moves}
+function chooseBossMove(e){
+ const moves=BOSS_MOVESETS[e.bossId],index=(e.attackCount+(e.phase===2?Math.floor(e.attackCount/moves.length):0))%moves.length;
+ let id=moves[index];const d=dist(e,player),reactToFlask=player.heal>0&&FLASK_DURATION-player.heal>=.25;
+ // Responses are chosen before wind-up; committed attacks retain their aim and timing.
+ if(lineClear(e,player)&&(reactToFlask||d>230&&e.attackCount%2===1)&&BOSS_MOVES[id].reach<d){
+  const ranged=moves.filter(key=>BOSS_MOVES[key].reach>=d-30&&key!==e.moveId);
+  if(ranged.length)id=ranged.reduce((best,key)=>BOSS_MOVES[key].windup<BOSS_MOVES[best].windup?key:best);
+ }
+ return id;
+}
+function nextBossMove(e){return BOSS_MOVES[chooseBossMove(e)]}
 function addBossHazard(e,kind,options={}){
  const spec=e.moveSpec;bossHazards.push({owner:e,kind,x:e.x,y:e.y,angle:e.attackAngle,source:{x:e.x,y:e.y},age:0,delay:e.windup,duration:.24,damage:spec.damage+(e.phase===2?3:0),radius:70,width:36,length:220,hit:false,nextTick:0,parryable:spec.parryable&&kind==='line',blockable:spec.blockable&&(kind==='line'||kind==='orb'),...options});
 }
 function prepareBossMove(e){
- const id=BOSS_MOVESETS[e.bossId][e.attackCount%BOSS_MOVESETS[e.bossId].length],spec=BOSS_MOVES[id];
- e.moveId=id;e.moveSpec=spec;e.kind=spec.pose;e.attackCount++;e.attackAngle=Math.atan2(player.y-e.y,player.x-e.x);e.angle=e.attackAngle;e.state='windup';e.parried=false;e.cueFired=false;bossCue(e);
+ const id=chooseBossMove(e),spec=BOSS_MOVES[id];
+ e.moveId=id;e.moveSpec=spec;e.kind=spec.pose;e.attackCount++;e.attackAngle=Math.atan2(player.y-e.y,player.x-e.x);e.angle=e.attackAngle;e.state='windup';e.parried=false;e.cueFired=false;
  e.windup=spec.windup*(e.phase===2?.92:1);e.timer=e.windup;e.attackRange=spec.reach;e.attackArc=1;e.quake=false;e.marks=[];
  const extra=e.phase===2,at={x:player.x,y:player.y},a=e.attackAngle,point=(distance,side=0)=>({x:e.x+Math.cos(a)*distance-Math.sin(a)*side,y:e.y+Math.sin(a)*distance+Math.cos(a)*side});
  const line=(o={})=>addBossHazard(e,'line',o),circle=(o={})=>addBossHazard(e,'circle',o),ring=(o={})=>addBossHazard(e,'ring',o),orb=(o={})=>addBossHazard(e,'orb',{speed:270,duration:2.2,radius:12,...o});
@@ -984,7 +999,7 @@ function updateBossHazards(dt){
  }
  bossHazards=bossHazards.filter(h=>!h.expired&&h.owner.hp>0&&h.owner.engaged);
 }
-function recoverEnemy(e){e.parried=false;e.state='recover';e.recoveryDuration=e.moveSpec?e.moveSpec.recovery:styleOf(e)==='bell'?1.15:e.type==='boss'?.85:e.type==='duelist'?.48:.7;e.timer=e.recoveryDuration;e.cooldown=e.type==='boss'?.45:e.type==='acolyte'?.9:.65}
+function recoverEnemy(e){e.parried=false;e.state='recover';const base=e.moveSpec?e.moveSpec.recovery:styleOf(e)==='bell'?1.15:e.type==='boss'?.85:e.type==='duelist'?.48:.7;e.recoveryDuration=e.type==='boss'?Math.max(.55,base*(e.phase===2?.78:.9)):base*.88;e.timer=e.recoveryDuration;e.cooldown=e.type==='boss'?.3:e.type==='acolyte'?.75:.5}
 function groundMarks(e){const p={x:player.x,y:player.y};if(e.phase===1)return [p];return [p,{x:p.x+100*Math.cos(e.attackAngle+1.2),y:p.y+100*Math.sin(e.attackAngle+1.2)},{x:p.x+100*Math.cos(e.attackAngle-1.2),y:p.y+100*Math.sin(e.attackAngle-1.2)}]}
 function beginEnemyAttack(e){
  if(e.type==='boss'){prepareBossMove(e);return}
@@ -1008,17 +1023,18 @@ function enemyStrike(e){
  sound(boss?75:110,.2,'sawtooth',.035);if(!parried)recoverEnemy(e);
 }
 function updateEnemy(e,dt){
+ e.stanceGrace=Math.max(0,(e.stanceGrace||0)-dt);e.stanceDelay=Math.max(0,(e.stanceDelay||0)-dt);if(e.stanceDelay<=0)e.stanceDamage=Math.max(0,(e.stanceDamage||0)-22*dt);
  e.flash=Math.max(0,e.flash-dt);e.cooldown=Math.max(0,e.cooldown-dt);if(e.hp<=0)return;
  const boss=e.type==='boss',p=bossProfiles[e.bossId],q=enemyProfiles[e.type],home={x:e.homeX,y:e.homeY};
  if(boss){
   if(e.bossId==='king'||e.bossId==='regent'){e.engaged=bossEngaged&&arenaBossId===e.bossId;if(!e.engaged)return}
   else{
    if(!e.engaged){if(dist(e,player)<340&&lineClear(e,player)){e.engaged=true;toast(p.name+' awakens.');sound(60,.5,'sine',.05)}else return}
-   if(dist(player,home)>650||dist(e,home)>580){e.engaged=false;e.hp=e.maxHp;e.x=e.homeX;e.y=e.homeY;e.state='idle';e.phase=1;e.attackCount=0;e.cooldown=1;e.marks=[];return}
+   if(dist(player,home)>650||dist(e,home)>580){e.engaged=false;e.hp=e.maxHp;e.x=e.homeX;e.y=e.homeY;e.state='idle';e.phase=1;e.attackCount=0;e.cooldown=1;e.stanceDamage=e.stanceDelay=e.stanceGrace=0;e.marks=[];return}
   }
-  if(e.hp<e.maxHp*.5&&e.phase===1){e.phase=2;toast(p.awakening);burst(e.x,e.y,p.light,40)}
+  if(e.hp<e.maxHp*CHALLENGE.bossAwakening&&e.phase===1){e.phase=2;toast(p.awakening);burst(e.x,e.y,p.light,40)}
  }
- if(e.state==='windup'){e.timer-=dt;if(boss&&!e.cueFired&&e.timer<=.18){e.cueFired=true;bossCue(e,true)}if(e.timer<=0)enemyStrike(e);return}
+ if(e.state==='windup'){e.timer-=dt;if(!boss&&e.timer>e.windup*.55&&e.kind!=='grave'){const aim=Math.atan2(player.y-e.y,player.x-e.x);e.attackAngle+=clamp(angleDiff(aim,e.attackAngle),-2.6*dt,2.6*dt);e.angle=e.attackAngle}if(e.timer<=0)enemyStrike(e);return}
  if(e.state==='charge'){
   e.timer-=dt;const before={x:e.x,y:e.y},dashSpeed=e.moveSpec?.dashSpeed||(boss?650:520);move(e,Math.cos(e.attackAngle)*dashSpeed*dt,Math.sin(e.attackAngle)*dashSpeed*dt);burst(e.x,e.y,effectLight(e),2);
   if(e.moveId==='glacialRush'){e.trailCadence=(e.trailCadence||0)-dt;if(e.trailCadence<=0){addBossHazard(e,'circle',{x:before.x,y:before.y,delay:.28,radius:24,duration:e.phase===2?1.8:1.1,persistent:true,visual:'ice'});e.trailCadence=.085}}
@@ -1045,7 +1061,7 @@ function update(dt){time+=dt;toastTimer-=dt;if(toastTimer<=0)$('toast').style.op
  player.queueTimer=Math.max(0,player.queueTimer-dt);if(player.queueTimer<=0)player.attackQueued=null;
  if(player.attackQueued&&player.attackCd<=0&&player.attack<=0){const queued=player.attackQueued;player.attackQueued=null;if(mouse.active||lockTarget)aimPlayer();attack(queued==='combo'?null:queued)}
  if(mouse.active||lockTarget)aimPlayer();
- if(player.heal>0){player.heal-=dt;if(player.heal<=0){player.hp=Math.min(player.maxHp,player.hp+60);burst(player.x,player.y,'#e2b777',30);sound(660,.3,'sine')}}
+ if(player.heal>0){player.heal-=dt;if(player.heal<=0){player.hp=Math.min(player.maxHp,player.hp+CHALLENGE.flaskHealing);burst(player.x,player.y,'#e2b777',30);sound(660,.3,'sine')}}
  let {x:dx,y:dy}=movementInput();
  if(player.roll>0){
   const prev=1-player.roll/DODGE.duration,next=clamp(prev+Math.min(dt,player.roll)/DODGE.duration,0,1),ease=t=>.5-.5*Math.cos(Math.PI*t);
@@ -1054,7 +1070,7 @@ function update(dt){time+=dt;toastTimer-=dt;if(toastTimer<=0)$('toast').style.op
   player.trailTimer-=dt;if(player.trailTimer<=0&&dist(before,player)>.5){player.rollTrail.push({x:before.x,y:before.y,life:.11,t:prev});player.trailTimer=.025}
  }else if(dx||dy){const norm=Math.hypot(dx,dy),speed=player.guardBroken>0?25:player.parry>0?35:player.guarding?58:player.chargingSpell?42:player.heal>0?65:player.attack>0?(player.classId==='wizard'?60:player.classId==='assassin'?45:player.classId==='heavy'?18:30):playerClass().speed;move(player,dx/norm*speed*dt,dy/norm*speed*dt);if(!mouse.active&&!lockTarget)player.angle=Math.atan2(dy,dx)}
  if(strikeWasActive&&player.attack>0&&player.attackKind===priorKind&&player.roll<=0&&!strikeProfile().projectile){const hit=strikeProfile(),end=hit.impact/hit.duration+.13,phase=1-player.attack/hit.duration,oldPhase=1-priorStrike/hit.duration,lunge=actorHeight(player)*.1*(smooth((phase-.2)/(end-.2))-smooth((oldPhase-.2)/(end-.2)));if(lunge>0)move(player,Math.cos(player.strikeAngle)*lunge,Math.sin(player.strikeAngle)*lunge)}
- if(player.regenDelay<=0&&player.roll<=0&&player.attack<=0&&!player.guarding&&!player.chargingSpell&&player.parry<=0&&player.guardBroken<=0)player.st=Math.min(player.maxSt,player.st+playerClass().regen*dt);
+ if(player.regenDelay<=0&&player.roll<=0&&player.attack<=0&&!player.guarding&&!player.chargingSpell&&player.parry<=0&&player.guardBroken<=0)player.st=Math.min(player.maxSt,player.st+playerClass().regen*CHALLENGE.staminaRegen*dt);
  if(!bossEngaged){const arena=player.x>finalGate.x+finalGate.w+player.r&&player.y>1800?'regent':player.x>gate.x+gate.w+player.r&&player.x<4330&&player.y<2330?'king':null;if(arena&&!defeatedBosses.has(arena)){bossEngaged=true;arenaBossId=arena;toast(bossProfiles[arena].name+' bars your way.');sound(55,.8,'sawtooth',.04)}}
  updatePlayerProjectiles(dt);if(mode!=='play'){updateHud();return}
  for(const e of enemies){updateEnemy(e,dt);if(mode!=='play')break}
@@ -1064,7 +1080,7 @@ function update(dt){time+=dt;toastTimer-=dt;if(toastTimer<=0)$('toast').style.op
  for(const b of motionBefore)recordMotion(b.a,b,dt);
  updateHud();
 }
-function updateHud(){if(!player)return;$('classText').textContent=playerClass().name;$('hp').style.width=player.hp/player.maxHp*100+'%';$('stamina').style.width=player.st/player.maxSt*100+'%';$('hpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('stText').textContent=Math.floor(player.st)+' / '+player.maxSt;$('soulsText').textContent='✦ '+player.souls+' souls';$('flasksText').textContent='◈ '+player.flasks+' / 3 flasks';const boss=enemies.filter(e=>e.type==='boss'&&e.hp>0&&e.engaged).sort((a,b)=>dist(a,player)-dist(b,player))[0];$('bossUI').style.display=boss?'block':'none';if(boss){$('bossName').textContent=bossProfiles[boss.bossId].name+(boss.phase===2?' · AWAKENED':'');$('bossHp').style.width=clamp(boss.hp/boss.maxHp,0,1)*100+'%';$('bossHp').style.background=bossProfiles[boss.bossId].armor}const fire=nearbyBonfire(),cache=nearbyCache();$('hint').textContent=stain&&dist(player,stain)<65?'E · Recover '+stain.souls+' souls':cache>=0?'E · Claim '+caches[cache].name+' · '+caches[cache].souls+' souls':fire>=0?'E · Rest at '+bonfires[fire].name+' & set checkpoint':(player.classId==='wizard'?'Click cast   ·   R-click piercing lance   ·   Spells use stamina   ·   Space dodge   ·   Q flask':'WASD move   ·   Click combo   ·   R-click heavy / special   ·   Space dodge   ·   Q flask   ·   Esc pause');const region=regions.find(r=>player.x>=r.x&&player.x<r.x+r.w&&player.y>=r.y&&player.y<r.y+r.h);$('region').textContent=region?region.name:'ASHEN KEEP';const advice={thorn:'Dodge across the charge. Punish the recovery.',crypt:'Move out of the violet death marks before they erupt.',bell:'Escape the wide swing. Watch the golden ground marks.',king:'Dodge the wind-up. Strike during recovery.'};$('quest').textContent=boss?((boss.state==='windup'&&boss.moveSpec?boss.moveSpec.name+' · ':'')+(bossProfiles[boss.bossId].advice||advice[boss.bossId])):defeatedBosses.size+' / '+Object.keys(bossProfiles).length+' bosses defeated · '+(player.x<4400&&player.y<2400?'Explore the keep, then seek the lands beyond.':'Find the Eclipse Regent in the southeastern nave.')}
+function updateHud(){if(!player)return;$('classText').textContent=playerClass().name;$('hp').style.width=player.hp/player.maxHp*100+'%';$('stamina').style.width=player.st/player.maxSt*100+'%';$('hpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('stText').textContent=Math.floor(player.st)+' / '+player.maxSt;$('soulsText').textContent='✦ '+player.souls+' souls';$('flasksText').textContent='◈ '+player.flasks+' / 3 flasks';const boss=enemies.filter(e=>e.type==='boss'&&e.hp>0&&e.engaged).sort((a,b)=>dist(a,player)-dist(b,player))[0];$('bossUI').style.display=boss?'block':'none';if(boss){$('bossName').textContent=bossProfiles[boss.bossId].name+(boss.phase===2?' · AWAKENED':'');$('bossHp').style.width=clamp(boss.hp/boss.maxHp,0,1)*100+'%';$('bossHp').style.background=bossProfiles[boss.bossId].armor}const fire=nearbyBonfire(),cache=nearbyCache();$('hint').textContent=stain&&dist(player,stain)<65?'E · Recover '+stain.souls+' souls':cache>=0?'E · Claim '+caches[cache].name+' · '+caches[cache].souls+' souls':fire>=0?'E · Rest at '+bonfires[fire].name+' & set checkpoint':(player.classId==='wizard'?'Click cast   ·   R-click piercing lance   ·   Spells use stamina   ·   Space dodge   ·   Q flask':'WASD move   ·   Click combo   ·   R-click heavy / special   ·   Space dodge   ·   Q flask   ·   Esc pause');const region=regions.find(r=>player.x>=r.x&&player.x<r.x+r.w&&player.y>=r.y&&player.y<r.y+r.h);$('region').textContent=region?region.name:'ASHEN KEEP';$('quest').textContent=boss?'':defeatedBosses.size+' / '+Object.keys(bossProfiles).length+' bosses defeated · '+(player.x<4400&&player.y<2400?'Explore the keep, then seek the lands beyond.':'Find the Eclipse Regent in the southeastern nave.')}
 function circle(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
 function drawMinimap(){if(!player||mode==='start')return;const w=width<700?180:300,h=w*WORLD.h/WORLD.w,x=width-w-20,y=height-h-55,s=w/WORLD.w;ctx.save();ctx.translate(x,y);ctx.fillStyle='#090c12e8';ctx.fillRect(-8,-23,w+16,h+45);ctx.strokeStyle='#736047';ctx.lineWidth=1;ctx.strokeRect(0,0,w,h);ctx.font='10px system-ui';ctx.textAlign='left';ctx.fillStyle='#d3c4a6';ctx.fillText('ASHEN KEEP · N ↑',0,-9);for(const r of regions){ctx.fillStyle=r.color;ctx.fillRect(r.x*s,r.y*s,r.w*s,r.h*s)}ctx.fillStyle='#747078';for(const r of walls)ctx.fillRect(r.x*s,r.y*s,Math.max(1,r.w*s),Math.max(1,r.h*s));for(const p of pillars)circle(p.x*s,p.y*s,1.5,'#747078');bonfires.forEach((b,i)=>{circle(b.x*s,b.y*s,3,'#efa552');if(i===activeBonfire){ctx.strokeStyle='#ffe9a4';ctx.beginPath();ctx.arc(b.x*s,b.y*s,5,0,Math.PI*2);ctx.stroke()}});caches.forEach((c,i)=>{if(!claimedCaches.has(i))circle(c.x*s,c.y*s,2,'#dec28b')});if(stain)circle(stain.x*s,stain.y*s,3,'#a65d77');for(const e of enemies)if(e.type==='boss'&&e.hp>0){const x=e.homeX*s,y=e.homeY*s;ctx.fillStyle=bossProfiles[e.bossId].light;ctx.beginPath();ctx.moveTo(x,y-4);ctx.lineTo(x+4,y);ctx.lineTo(x,y+4);ctx.lineTo(x-4,y);ctx.closePath();ctx.fill()}circle(player.x*s,player.y*s,3,'#cdeef0');ctx.fillStyle='#b5aea3';ctx.font='9px system-ui';ctx.fillText('You · Flame · Relic · Boss',0,h+14);ctx.restore()}
 const humanStyles={
@@ -1449,8 +1465,7 @@ function telegraph3(fx,a){
   if(a.attack>0&&a.attackHit&&!strikeProfile().projectile&&a.attack>strikeProfile().duration*.42)ring3(fx,a.x,a.y,strikeProfile().range,Math.min(75,strikeProfile().range-10),'#e2d9ba',.28,a.strikeAngle-strikeProfile().arc,a.strikeAngle+strikeProfile().arc);return;
  }
  if(a.type==='boss'){
-  if(a.state==='windup'&&a.moveSpec){const spec=a.moveSpec,r=a.r+8+18*clamp(a.timer/a.windup,0,1);ring3(fx,a.x,a.y,r,r-3,spec.parryable?'#b9e5ed':spec.blockable?'#dec18b':'#d49fce',a.cueFired?.9:.4)}
-  else if(a.state==='recover'&&a.parried)ring3(fx,a.x,a.y,a.r+12,a.r+9,'#d9f7ff',.65);return;
+  if(a.state==='recover'&&a.parried)ring3(fx,a.x,a.y,a.r+12,a.r+9,'#d9f7ff',.65);return;
  }
  if(a.state!=='windup')return;const c=effectLight(a);
  if(a.kind==='lunge'){const root=matMul(translate(a.x,.9,a.y),rotateY(-a.attackAngle));shape(fx,'cube',root,[130,0,0],[396,.3,136],c,.2,1)}
